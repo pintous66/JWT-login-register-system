@@ -5,6 +5,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import health.mental.Exception.NoPermissionException;
+import health.mental.Exception.TokenExpiredExceptions;
 import health.mental.domain.User.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 
 @Service
 public class TokenService {
@@ -26,27 +30,36 @@ public class TokenService {
                     .withSubject(user.getLogin())
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
+
             return token;
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Error while generating token", exception);
         }
     }
 
-    public String validateToken(String token){
+    public String validateToken(String token) {
         token = token.replace("Bearer ", "");
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm)
+            Instant now = Instant.now();
+            Date expirationDate = JWT.decode(token).getExpiresAt();
+            if (expirationDate != null && expirationDate.toInstant().isBefore(now)) {
+                throw new TokenExpiredExceptions("Token expired");
+            }
+
+            DecodedJWT decodedJWT = JWT.require(algorithm)
                     .withIssuer("auth-api")
                     .build()
-                    .verify(token)
-                    .getSubject();
-        } catch (JWTVerificationException exception){
-            throw new RuntimeException("Error while validating token", exception);
+                    .verify(token);
+
+            return decodedJWT.getSubject();
+        } catch (JWTVerificationException exception) {
+            throw new NoPermissionException("No permission/Token invalid");
         }
     }
 
+
     private Instant genExpirationDate(){
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.UTC);
+        return LocalDateTime.now().plusSeconds(1).toInstant(ZoneOffset.UTC);
     }
 }
