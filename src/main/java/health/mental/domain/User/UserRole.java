@@ -2,7 +2,8 @@ package health.mental.domain.User;
 
 public enum UserRole {
     ADMIN("admin"),
-    USER("user");
+    USER("user"),
+    PSICO("psico");
 
 
     private String role;
@@ -14,5 +15,10 @@ public enum UserRole {
 
     public String getRole() {
         return role;
+    }
+
+    @Override
+    public String toString() {
+        return "ROLE_"+getRole().toUpperCase();
     }
 }

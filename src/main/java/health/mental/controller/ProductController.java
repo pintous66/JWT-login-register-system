@@ -38,4 +38,14 @@ public class ProductController {
             return ResponseEntity.ok(productList);
         }
 
+
+        @GetMapping("/{id}")
+        public ResponseEntity getProductById(@PathVariable Long id) {
+            Product product = productRepository.findById(id).orElse(null);
+            if(product == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(productMapper.mapProductToDTO(product));
+        }
+
 }

@@ -1,5 +1,6 @@
 package health.mental.domain.User;
 
+import health.mental.infra.security.PermissionService;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,6 +34,7 @@ public class User implements UserDetails {
     @Column(name = "login", unique = true)
     private String login;
 
+
     @Column(name = "password")
     private String password;
 
@@ -46,11 +48,8 @@ public class User implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if(role == UserRole.ADMIN) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"),new SimpleGrantedAuthority("ROLE_USER"));
-        } else {
-            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        }
+        PermissionService permissionService = new PermissionService();
+        return permissionService.getHierarchyMap().get(role);
     }
 
     @Override

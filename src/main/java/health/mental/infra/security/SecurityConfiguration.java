@@ -1,5 +1,6 @@
 package health.mental.infra.security;
 
+import health.mental.domain.User.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,27 +15,52 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Map;
+import java.util.Set;
+
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
 
     @Autowired
     private SecurityFilter securityFilter;
+
+    @Autowired
+    private PermissionService permissionService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/auth/register").permitAll() // no futuro só permitir para ADMIN
-                        .requestMatchers(HttpMethod.POST ,"/product").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                .authorizeHttpRequests(authorize -> {
+                    authorize.requestMatchers(HttpMethod.GET,"/static/**").permitAll();
+                    Map<String, Map<HttpMethod, Set<UserRole>>> urlPermissions = permissionService.getUrlPermissions();
+                    urlPermissions.forEach((url, methods) -> {
+                        methods.forEach((method, roles) -> {
+                            if (roles == null) {
+                                authorize.requestMatchers(method, url).permitAll();
+                            } else {
+                                authorize.requestMatchers(method, url).hasAnyRole(roles.stream().map(UserRole::name).toArray(String[]::new));
+                            }
+                        });
+                    });
+                    /*
+                    authorize.requestMatchers(HttpMethod.POST,"/auth/login").permitAll();
+                    authorize.requestMatchers(HttpMethod.POST,"/auth/register").permitAll();// no futuro só permitir para ADMIN
+                    authorize.requestMatchers(HttpMethod.POST ,"/product").hasRole("ADMIN");
+                    authorize.requestMatchers(HttpMethod.GET ,"/product/{id}").hasRole("PSICO");
+                    */
+                    authorize.anyRequest().authenticated();
+                }
+
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {

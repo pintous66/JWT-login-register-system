@@ -6,7 +6,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import health.mental.Exception.NoPermissionException;
+import health.mental.Exception.TokenInvalidException;
 import health.mental.Exception.TokenExpiredExceptions;
 import health.mental.domain.User.User;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,12 +54,13 @@ public class TokenService {
 
             return decodedJWT.getSubject();
         } catch (JWTVerificationException exception) {
-            throw new NoPermissionException("No permission/Token invalid");
+
+            throw new TokenInvalidException("Token invalid");
         }
     }
 
 
     private Instant genExpirationDate(){
-        return LocalDateTime.now().plusSeconds(1).toInstant(ZoneOffset.UTC);
+        return LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC);
     }
 }
