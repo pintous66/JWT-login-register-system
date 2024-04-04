@@ -20,10 +20,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -60,8 +57,13 @@ public class AuthController {
 
 
 
+    /*
+    @GetMapping("/test")
+    public ResponseEntity test(HttpServletRequest request) {
 
-
+        return ResponseEntity.ok().body("Test");
+    }
+*/
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody @Valid AuthRegisterDTO authDTO) {
 
