@@ -1,5 +1,7 @@
 package health.mental.controller;
 
+import health.mental.Exception.TokenExpiredExceptions;
+import health.mental.Exception.TokenInvalidException;
 import health.mental.Utils;
 import health.mental.domain.User.*;
 import health.mental.infra.security.TokenService;
@@ -27,6 +29,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,6 +43,7 @@ public class AuthController {
 
     @Autowired
     private TokenService tokenService;
+
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid AuthDTO authDTO) {
@@ -56,6 +60,24 @@ public class AuthController {
     }
 
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getLoggedInUser(@RequestHeader("Authorization") String bearerToken) {
+
+
+
+            String token = bearerToken.substring(7);
+            String userLogin = tokenService.validateToken(token);
+
+            userRepository.findByLogin(userLogin);
+
+
+            return ResponseEntity.ok( UserMapper.toUserMeDTO((User) userRepository.findByLogin(userLogin)));
+
+
+
+
+    }
+
 
     /*
     @GetMapping("/test")
@@ -71,9 +93,6 @@ public class AuthController {
                return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body("{\"error\": \"Login/Username already in use\"}");
         }
 
-        if( !((List) Arrays.stream(UserRole.values())).contains( authDTO.role().getRole())){
-            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body("{\"error\": \"Invalid Role\"}");
-        }
 
         String encodedPassword =  new BCryptPasswordEncoder().encode(Utils.decodeJwt(authDTO.password()));
         User user = new User(authDTO.login(), encodedPassword, authDTO.role());

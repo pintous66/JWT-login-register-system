@@ -13,10 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +50,7 @@ public class PermissionService {
         auth.put(HttpMethod.POST, null);
         auth.put(HttpMethod.GET, null);
         urlPermissions.put("/gpt/ask", auth);
-        urlPermissions.put("/auth/test", auth);
+
 
         auth = new HashMap<>();
         auth.put(HttpMethod.POST, Set.of(UserRole.ADMIN));
@@ -83,11 +80,15 @@ public class PermissionService {
             url = matcher.replaceFirst("/{id}");
         }
 
-        Set<UserRole> roles = urlPermissions.get(url).get(HttpMethod.valueOf(method));
-        if (roles == null) {
+        try {
+            Set<UserRole> roles  = urlPermissions.get(url).get(HttpMethod.valueOf(method));
+            return user.getAuthorities().stream().anyMatch(a -> roles.contains(UserRole.valueOf(a.getAuthority().split("_")[1].toUpperCase())));
+        }catch (NullPointerException e){
             return true;
         }
-        return user.getAuthorities().stream().anyMatch(a -> roles.contains(UserRole.valueOf(a.getAuthority().split("_")[1].toUpperCase())));
+
+
+
 
     }
 }

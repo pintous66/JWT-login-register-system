@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import health.mental.Exception.TokenInvalidException;
 import health.mental.Exception.TokenExpiredExceptions;
 import health.mental.domain.User.User;
+import org.jose4j.jwt.JwtClaims;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +61,11 @@ public class TokenService {
     }
 
 
+
+
     private Instant genExpirationDate(){
         return LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC);
     }
+
+
 }
