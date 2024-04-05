@@ -49,6 +49,7 @@ public class AuthController {
     public ResponseEntity login(@RequestBody @Valid AuthDTO authDTO) {
 
         var usernamePassword = new UsernamePasswordAuthenticationToken(authDTO.login(), Utils.decodeJwt(authDTO.password()));
+
         try {
             authenticationManager.authenticate(usernamePassword);
         } catch (AuthenticationException e) {
@@ -88,6 +89,8 @@ public class AuthController {
 */
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody @Valid AuthRegisterDTO authDTO) {
+
+
 
         if(this.userRepository.findByLogin(authDTO.login()) != null){
                return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body("{\"error\": \"Login/Username already in use\"}");

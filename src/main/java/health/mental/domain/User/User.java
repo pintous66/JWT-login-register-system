@@ -31,6 +31,8 @@ public class User implements UserDetails {
     private String id;
 
 
+
+
     @Column(name = "login", unique = true)
     private String login;
 
