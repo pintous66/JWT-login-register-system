@@ -16,6 +16,7 @@ public class CustomExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         String message = ex.getCause().getMessage(); // Obtém a mensagem de erro original
+        System.out.println(message);
 
         if (message.contains("UserRole")) {
 

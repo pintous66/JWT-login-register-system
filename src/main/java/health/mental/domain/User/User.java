@@ -43,10 +43,15 @@ public class User implements UserDetails {
     @Column(name = "role")
     private UserRole role;
 
-    public User(String login, String password, UserRole role) {
+    public User(String login, String password, String role) {
         this.login = login;
         this.password = password;
-        this.role = role;
+        try{
+            this.role = UserRole.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role, please use one of the following: " + List.of(UserRole.values()));
+        }
+
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
